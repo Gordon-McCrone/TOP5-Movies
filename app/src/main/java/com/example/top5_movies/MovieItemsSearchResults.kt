@@ -3,7 +3,7 @@ package com.example.top5_movies
 import android.os.Parcel
 import android.os.Parcelable
 
-data class MovieItemsSearchResults(val title: String, val release_date: String, val backdrop_path: String) : Parcelable {
+data class MovieItemsSearchResults(val title: String, val release_date: String, val poster_path: String) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
         parcel.readString()!!,
@@ -13,7 +13,7 @@ data class MovieItemsSearchResults(val title: String, val release_date: String, 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(title)
         parcel.writeString(release_date)
-        parcel.writeString(backdrop_path)
+        parcel.writeString(poster_path)
     }
 
     override fun describeContents(): Int {

@@ -14,7 +14,6 @@ class MainActivitySearchResults : AppCompatActivity() {
     lateinit var background: RelativeLayout
 
     var searchResults: MutableList<MovieItemsSearchResults> = ArrayList()
-    lateinit var movieItemsSearchResults: ListView
 
     lateinit var adapter: MovieItemsSearchResultsAdapter
     lateinit var movieItemsSearchResultsView: ListView

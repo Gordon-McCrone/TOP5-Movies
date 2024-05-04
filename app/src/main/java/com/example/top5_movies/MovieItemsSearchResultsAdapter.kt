@@ -33,7 +33,7 @@ class MovieItemsSearchResultsAdapter(context: Context, contacts: List<MovieItems
         }
         binding.releaseDateTitle.text = currentMovieItem?.title + " (" + shortYear + ")"
 
-        Picasso.with(getContext()).load("https://image.tmdb.org/t/p/w500" + currentMovieItem.backdrop_path).fit().into(binding.imageView);
+        Picasso.with(getContext()).load("https://image.tmdb.org/t/p/w500" + currentMovieItem.poster_path).fit().into(binding.imageView);
 
         return binding.root
     }
