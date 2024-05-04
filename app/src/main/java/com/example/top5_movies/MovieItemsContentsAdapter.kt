@@ -22,20 +22,9 @@ class MovieItemsContentsAdapter(context: Context, contacts: List<MovieItemsConte
 
         binding = ActivityMovielistContentsBinding.inflate(LayoutInflater.from(context))
 
-//        val valueOne = intent.getStringExtra("samplename").toString()
-//
-//        val b = getIntent().extras
-//        val currentMovieItemFromCaller = b!!.getString("currentMovieItem.name")
-
-//        Log.d("*5*", "getView mainActivity.movieItemSelected " + MainActivity().movieItemSelected)
-
         binding.releaseDateTitle.setTextColor(Color.BLACK)
         val shortYear = (currentMovieItem?.year)?.substring(0,4)
         binding.releaseDateTitle.text = currentMovieItem?.name + " (" + shortYear + ")"
-
-//        binding.releaseDateTitle.setTextColor(Color.BLACK)
-//        val shortYear = (currentMovieItem?.year)?.substring(0,4)
-//        binding.releaseDateTitle.text = currentMovieItem?.name + " (" + shortYear + ")"
 
         return binding.root
     }

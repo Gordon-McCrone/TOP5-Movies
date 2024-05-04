@@ -1,8 +1,10 @@
 package com.example.top5_movies
 
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.os.Parcelable
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,12 +15,27 @@ import android.widget.ListView
 import android.widget.RelativeLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import com.example.top5_movies.databinding.NewSearchInputBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import org.apache.http.HttpHeaders
+import org.apache.http.ParseException
+import org.apache.http.client.HttpClient
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.impl.client.DefaultHttpClient
+import org.apache.http.util.EntityUtils
+import org.json.JSONException
+import org.json.JSONObject
+import java.io.IOException
 
 class MainActivityContents : AppCompatActivity() {
     lateinit var background: RelativeLayout
 
     var movieItemsContents: MutableList<MovieItemsContents> = ArrayList()
     var movieItemsContentsUpdated: MutableList<MovieItemsContents> = ArrayList()
+    var searchResults: MutableList<MovieItemsSearchResults> = ArrayList()
 
     val iOSBlue = "#2D7CF6"
     val iOSGrey = "#F9F9F9"
@@ -38,7 +55,7 @@ class MainActivityContents : AppCompatActivity() {
     lateinit var buttonGoBack: Button
     lateinit var buttonSearch: Button
 
-    var runOnceList = false
+    private lateinit var bindingNewSearchInputBinding: NewSearchInputBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,7 +69,6 @@ class MainActivityContents : AppCompatActivity() {
         val rightMargin = 40
         val buttonSpacer = 20
 
-        //val background = RelativeLayout(this)
         background = RelativeLayout(this)
         background.setBackgroundColor(Color.parseColor("#F9F9F9"))
         val backgroundLayoutParam = RelativeLayout.LayoutParams(
@@ -66,9 +82,9 @@ class MainActivityContents : AppCompatActivity() {
         windowManager.defaultDisplay.getMetrics(displayMetrics)
 
         movieItemsContentsListView = ListView(this)
-        val rel_discoveryListView = RelativeLayout.LayoutParams(displayMetrics.widthPixels,displayMetrics.heightPixels)
+        val rel_movieItemsContentsListView = RelativeLayout.LayoutParams(displayMetrics.widthPixels,displayMetrics.heightPixels)
         //rel_discoveryListView.topMargin
-        movieItemsContentsListView.setLayoutParams(rel_discoveryListView)
+        movieItemsContentsListView.setLayoutParams(rel_movieItemsContentsListView)
         // Paste this into Android studio and it automatically converts (0xFFC9C9CE to -0x363632), first 2 F's opacity, not last 2 F's, and first number and third number are colours to blend with: "int[] colors = {0, 0xFFC9C9CE, 0};"
         val colors = intArrayOf(-0x363632, -0x363632, -0x363632)
         movieItemsContentsListView.setDivider(GradientDrawable(GradientDrawable.Orientation.RIGHT_LEFT, colors))
@@ -81,16 +97,7 @@ class MainActivityContents : AppCompatActivity() {
         movieItemsContentsListView.setAdapter(adapter)
 
         movieItemsContentsListView.setOnItemClickListener(AdapterView.OnItemClickListener { parent, view, position, id ->
-            //val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-            //inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
 
-            //activityMovielistContentsBinding = .inflate(LayoutInflater.from(this))
-
-//            val currentMovieItem = parent.getItemAtPosition(position)
-//            currentMovieItem as MovieItems
-//            activityMovielistContentsBinding.label.setText(currentMovieItem.name)
-//            Log.d("*5*", "activityMovielistContentsBinding.label " + activityMovielistContentsBinding.label.toString())
-//            Log.d("*5*", "currentMovieItem.name " + currentMovieItem.name)
         })
 
         buttonGoBack= Button(this)
@@ -124,7 +131,7 @@ class MainActivityContents : AppCompatActivity() {
         buttonSearch.setLayoutParams(rel_buttonSearch)
         buttonSearch.text = "Search"
         buttonSearch.setOnClickListener{
-            //onClickButtonUpdate()
+            onClickButtonSearch()
         }
         buttonSearch.setTextColor(Color.parseColor("#000000"))
         buttonSearch.visibility = View.VISIBLE
@@ -136,25 +143,93 @@ class MainActivityContents : AppCompatActivity() {
         background.addView(buttonSearch)
 
         val movieItemSelected = intent.getStringExtra("currentMovieItem.name").toString()
-        Log.d("*5*", "MainActivityContents movieItemSelected " + movieItemSelected)
-        Log.d("*5*", "movieItemsContents count " + movieItemsContents.count())
         movieItemsContentsUpdated = movieItemsContents.filter({it.movieItem == movieItemSelected}).toMutableList()
         adapter = MovieItemsContentsAdapter(this, movieItemsContentsUpdated)
         movieItemsContentsListView.setAdapter(adapter)
-
-        Log.d("*5*", "movieItemsContents count2: " + movieItemsContents.count())
     }
 
     fun setupMovieItemsContents() {
-        Log.d("*5*", "setupMovieItemsContents runOnceList " + runOnceList)
-        if (runOnceList == false) {
-            movieItemsContents.add(MovieItemsContents("Action", "Diehard", "1988-07-22"))
-            movieItemsContents.add(MovieItemsContents("Action", "The Terminator", "1984-10-26"))
-            movieItemsContents.add(MovieItemsContents("Action", "Jurassic Park", "1993-08-20"))
-            movieItemsContents.add(MovieItemsContents("Kids", "The Lion King", "1994-08-25"))
-            movieItemsContents.add(MovieItemsContents("Kids", "Aladdin", "1992-11-25"))
-            movieItemsContents.add(MovieItemsContents("Kids", "Bambi", "1942-08-21"))
-            runOnceList = true
+        movieItemsContents.add(MovieItemsContents("Action", "Diehard", "1988-07-22"))
+        movieItemsContents.add(MovieItemsContents("Action", "The Terminator", "1984-10-26"))
+        movieItemsContents.add(MovieItemsContents("Action", "Jurassic Park", "1993-08-20"))
+        movieItemsContents.add(MovieItemsContents("Kids", "The Lion King", "1994-08-25"))
+        movieItemsContents.add(MovieItemsContents("Kids", "Aladdin", "1992-11-25"))
+        movieItemsContents.add(MovieItemsContents("Kids", "Bambi", "1942-08-21"))
+    }
+
+    fun onClickButtonSearch() {
+
+        Log.d("*5*", "onClickButtonSearch")
+
+        bindingNewSearchInputBinding = NewSearchInputBinding.inflate(LayoutInflater.from(this))
+        val view = bindingNewSearchInputBinding.root
+        setContentView(view)
+
+        bindingNewSearchInputBinding.buttonSearch.setOnClickListener {
+            if (bindingNewSearchInputBinding.label.text.toString().length > 0) {
+//                movieItems.add(MovieItems(bindingNewStringInputBinding.label.text.toString()))
+//                setContentView(R.layout.activity_main)
+//                adapter.notifyDataSetChanged()
+//                setContentView(background)
+
+                //searchResults
+
+                runBlocking {
+                    GlobalScope.launch {
+                        try {
+                            val encodedURL = java.net.URLEncoder.encode(bindingNewSearchInputBinding.label.text.toString(), "utf-8")
+                            val url = "https://api.themoviedb.org/3/search/movie?query=" + encodedURL
+
+                            val httppost: HttpGet = HttpGet(url)
+                            httppost.setHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                            httppost.setHeader("Authorization", getString(R.string.TMDB_Authorization))
+                            val httpclient: HttpClient = DefaultHttpClient()
+                            val response = httpclient.execute(httppost)
+                            val status = response.statusLine.statusCode
+                            if (status == 200) {
+                                val entity = response.entity
+                                val data = EntityUtils.toString(entity)
+                                val jsono = JSONObject(data)
+                                val jarray = jsono.getJSONArray("results")
+                                for (i in 0 until jarray.length()) {
+                                    val objectInJSON = jarray.getJSONObject(i)
+                                    val backdrop_path = objectInJSON.getString("backdrop_path")
+                                    val title = objectInJSON.getString("title")
+                                    val release_date = objectInJSON.getString("release_date")
+                                    searchResults.add(MovieItemsSearchResults(title, release_date, backdrop_path))
+                                }
+                            }
+                        } catch (e: JSONException) {
+                            Log.e("Error :", e.message!!)
+                        } catch (e: ParseException) {
+                            Log.e("Error :", e.message!!)
+                        } catch (e: IOException) {
+                            Log.e("Error :", e.message!!)
+                        } catch (e: Exception) {
+                            Log.e("Error :", e.message!!)
+                        }
+
+                        Log.d("*5*", "searchResults: " + searchResults)
+                    }
+                }
+
+                if (searchResults.count() > 0) {
+                    runOnUiThread {
+//                        val extra = Bundle()
+//                        extra.putSerializable("searchResults", searchResults as java.util.ArrayList<out Parcelable>)
+
+                        val intent = Intent(this, MainActivitySearchResults::class.java)
+                        intent.putParcelableArrayListExtra("searchResults", searchResults as java.util.ArrayList<out Parcelable>)
+//                        intent.putExtra("extra", extra);
+                        startActivity(intent)
+                    }
+                }
+            }
+        }
+
+        bindingNewSearchInputBinding.buttonCancel.setOnClickListener{
+            setContentView(R.layout.activity_movielist_contents)
+            setContentView(background)
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.example.top5_movies
 
-import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
@@ -38,7 +37,7 @@ class MainActivity : AppCompatActivity() {
 
     val buttonHeight = 150
 
-    lateinit var adapter: MovieItemsListAdapter
+    lateinit var adapter: MovieItemsAdapter
     lateinit var movieItemsListView: ListView
     lateinit var buttonCreate: Button
     var listTapOperation = ButtonOperation.OPEN
@@ -88,7 +87,7 @@ class MainActivity : AppCompatActivity() {
 
         setupMovieItems()
 
-        adapter = MovieItemsListAdapter(this, movieItems)
+        adapter = MovieItemsAdapter(this, movieItems)
 
         movieItemsListView.setAdapter(adapter)
 

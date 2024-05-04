@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">TOP5-Movies</string>
+    <string name="TMDB_Authorization">Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzM2UwZWM2MmNhNTczMTEwNzIzYzkzNmUyYzIwNTY2OCIsInN1YiI6IjY2MzMyNWM0ZDE4NTcyMDEyODM0MWI4YyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.3eZ_4fnAXA30lD2XkE42fbPBbp2FPI88PlBosrX9IZg</string>
 </resources>

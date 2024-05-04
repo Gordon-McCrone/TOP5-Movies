@@ -3,6 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
+        android:usesCleartextTraffic="true"
+        android:networkSecurityConfig="@xml/network_security_config"
+        tools:ignore="GoogleAppIndexingWarning"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -24,6 +27,12 @@
         <activity
             android:name=".MainActivityContents">
         </activity>
+        <activity
+            android:name=".MainActivitySearchResults">
+        </activity>
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
     </application>
-
+    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

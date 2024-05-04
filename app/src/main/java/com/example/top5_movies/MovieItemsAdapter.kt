@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import com.example.top5_movies.databinding.ListviewItemBinding
 
-class MovieItemsListAdapter(context: Context, contacts: List<MovieItems>)
+class MovieItemsAdapter(context: Context, contacts: List<MovieItems>)
     : ArrayAdapter<MovieItems>(context, 0, contacts) {
 
     private lateinit var binding: ListviewItemBinding
