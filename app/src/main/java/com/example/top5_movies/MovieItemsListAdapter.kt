@@ -14,20 +14,12 @@ class MovieItemsListAdapter(context: Context, contacts: List<MovieItems>)
     private lateinit var binding: ListviewItemBinding
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        //val rootView = convertView ?: LayoutInflater.from(context).inflate(R.layout.listview_item, parent, false)
         val currentMovieItem = getItem(position)
 
         binding = ListviewItemBinding.inflate(LayoutInflater.from(context))
-//        binding = ListviewItemBinding.inflate(layoutInflater)
-//        val view = binding.root
-//        setContentView(view)
 
         binding.label.setTextColor(Color.BLACK)
-        //binding.label.setTextColor(Color.parseColor("#000000"))
         binding.label.text = currentMovieItem?.name
-
-        //rootView.label.setTextColor(Color.parseColor("#000000"))
-        //rootView.label.text = currentMovieItem.name
 
         return binding.root
     }

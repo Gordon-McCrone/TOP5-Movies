@@ -1,5 +1,7 @@
 package com.example.top5_movies
 
+import android.app.Activity
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
@@ -45,6 +47,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var bindingNewStringInputBinding: NewStringInputBinding
 
+    var movieItemSelected = ""
+
     enum class ButtonOperation {
         OPEN, UPDATE, DELETE
     }
@@ -52,19 +56,19 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        Log.d("*5*", "MainActivity onCreate")
+
         val buttonWidth = 300
         val bottomMargin = 80
         val leftMargin = 40
         val rightMargin = 40
         val buttonSpacer = 20
 
-        //val background = RelativeLayout(this)
         background = RelativeLayout(this)
         background.setBackgroundColor(Color.parseColor("#F9F9F9"))
         val backgroundLayoutParam = RelativeLayout.LayoutParams(
             RelativeLayout.LayoutParams.MATCH_PARENT,
             RelativeLayout.LayoutParams.MATCH_PARENT)
-        // set RelativeLayout as a root element of the screen
         setContentView(background, backgroundLayoutParam)
 
         val displayMetrics = DisplayMetrics()
@@ -93,7 +97,13 @@ class MainActivity : AppCompatActivity() {
             //inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
 
             if (listTapOperation == ButtonOperation.OPEN) {
-                // TODO Open up Search movie page
+                val currentMovieItem = parent.getItemAtPosition(position)
+                currentMovieItem as MovieItems
+                Log.d("*5*", "MainActivity currentMovieItem.name " + currentMovieItem.name)
+
+                val intent = Intent(this, MainActivityContents::class.java)
+                intent.putExtra("currentMovieItem.name", currentMovieItem.name)
+                startActivity(intent)
             }
             else if (listTapOperation == ButtonOperation.UPDATE) {
                 val gdButtonUpdate = GradientDrawable()
@@ -108,7 +118,6 @@ class MainActivity : AppCompatActivity() {
                 val view = bindingNewStringInputBinding.root
                 setContentView(view)
 
-                //val currentMovieItem = parent.selectedItem
                 val currentMovieItem = parent.getItemAtPosition(position)
                 currentMovieItem as MovieItems
                 bindingNewStringInputBinding.label.setText(currentMovieItem.name)
@@ -116,7 +125,6 @@ class MainActivity : AppCompatActivity() {
                 bindingNewStringInputBinding.buttonSave.setOnClickListener {
                     if (bindingNewStringInputBinding.label.text.toString().length > 0) {
                         movieItems.set(position, MovieItems(bindingNewStringInputBinding.label.text.toString()))
-                        //movieItems.set(position, MovieItems("test"))
                         setContentView(R.layout.activity_main)
                         adapter.notifyDataSetChanged()
                         setContentView(background)
@@ -151,7 +159,6 @@ class MainActivity : AppCompatActivity() {
 
             override
             fun onScroll(view: AbsListView, firstVisibleItem: Int, visibleItemCount: Int, totalItemCount: Int) {
-                Log.i("*5*", "onScroll ${firstVisibleItem}")
             }
         })
 
@@ -220,7 +227,7 @@ class MainActivity : AppCompatActivity() {
     }
     fun setupMovieItems() {
         movieItems.add(MovieItems("Action"))
-        movieItems.add(MovieItems("Romance"))
+        movieItems.add(MovieItems("Kids"))
     }
 
     fun onClickButtonCreate() {
