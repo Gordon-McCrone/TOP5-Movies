@@ -52,6 +52,7 @@ android {
 }
 
 dependencies {
+    implementation("com.squareup.picasso:picasso:2.5.2")
     implementation("org.apache.httpcomponents:httpcore:4.4.1")
     implementation("org.apache.httpcomponents:httpclient:4.5")
     implementation("androidx.core:core-ktx:1.9.0")

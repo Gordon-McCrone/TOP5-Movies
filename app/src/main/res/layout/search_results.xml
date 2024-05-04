@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="45dp"
+    android:layout_height="100dp"
     android:layout_marginTop="0dp"
     android:layout_marginLeft="0dp"
     android:layout_marginRight="0dp"
@@ -9,10 +9,20 @@
     android:orientation="vertical"
     android:padding="0dp">
 
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginBottom="0dp"
+        android:orientation="horizontal"
+        android:padding="0dp">
+
     <TextView
         android:id="@+id/release_date_title"
         android:maxLines="3"
-        android:layout_width="360dp"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="0dp"
         android:layout_marginLeft="5dp"
@@ -22,5 +32,12 @@
         android:textSize="16dip"
         android:textStyle="bold">
     </TextView>
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_height="100dp"
+            android:layout_width="150dp"/>
+
+    </LinearLayout>
 
 </LinearLayout>
