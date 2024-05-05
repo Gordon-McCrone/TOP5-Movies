@@ -169,12 +169,10 @@ class MainActivityContents : AppCompatActivity() {
         var currentMovieItems = data!!.getParcelableArrayListExtra<MovieItemsSearchResults>("MovieItemsSearchResults")
 
         var currentMovieItem = currentMovieItems!!.last()
-//        currentMovieItem as MovieItemsSearchResults
 
         movieItemsContentsUpdated.add(MovieItemsContents(movieItemSelected, currentMovieItem.title, currentMovieItem.release_date))
 
         adapter = MovieItemsContentsAdapter(this, movieItemsContentsUpdated)
         movieItemsContentsListView.setAdapter(adapter)
-        adapter.notifyDataSetChanged()
     }
 }
