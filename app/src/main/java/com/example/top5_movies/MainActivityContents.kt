@@ -1,6 +1,7 @@
 package com.example.top5_movies
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
@@ -17,6 +18,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.top5_movies.databinding.NewSearchInputBinding
+import java.io.File
+import java.io.PrintWriter
+
 
 class MainActivityContents : AppCompatActivity() {
     lateinit var background: RelativeLayout
@@ -139,18 +143,54 @@ class MainActivityContents : AppCompatActivity() {
     }
 
     fun setupMovieItemsContents() {
-        movieItemsContents.add(MovieItemsContents("Action", "Diehard", "1988-07-22"))
-        movieItemsContents.add(MovieItemsContents("Action", "The Terminator", "1984-10-26"))
-        movieItemsContents.add(MovieItemsContents("Action", "Jurassic Park", "1993-08-20"))
-        movieItemsContents.add(MovieItemsContents("Kids", "The Lion King", "1994-08-25"))
-        movieItemsContents.add(MovieItemsContents("Kids", "Aladdin", "1992-11-25"))
-        movieItemsContents.add(MovieItemsContents("Kids", "Bambi", "1942-08-21"))
+        val filename = "MainActivityContents"
+
+        // Developer reset file during testing
+//        applicationContext.openFileOutput(filename, Context.MODE_PRIVATE).use {
+//            it.write("".toByteArray())
+//        }
+
+        var file = File(getFilesDir().getAbsolutePath(), filename)
+        if (file != null) {
+
+            var testArray = readFileAsLinesUsingUseLines(file.absolutePath)
+            // 3 item lines per movieItemsContents
+            if (testArray.count() > 2) {
+                var movieItem = ""
+                var name = ""
+                var year = ""
+                var i = 0
+                while (i < testArray.count() - 1) {
+                    movieItem = testArray.get(i)
+                    i++
+                    name = testArray.get(i)
+                    i++
+                    year = testArray.get(i)
+                    i++
+                    movieItemsContents.add(MovieItemsContents(movieItem, name, year))
+                }
+            }
+            else {
+                // Dummy data for when app first used
+                if (movieItemsContents.count() == 0) {
+                    movieItemsContents.add(MovieItemsContents("Action", "Diehard", "1988-07-22"))
+                    movieItemsContents.add(MovieItemsContents("Action", "The Terminator", "1984-10-26"))
+                    movieItemsContents.add(MovieItemsContents("Action", "Jurassic Park", "1993-08-20"))
+                    movieItemsContents.add(MovieItemsContents("Kids", "The Lion King", "1994-08-25"))
+                    movieItemsContents.add(MovieItemsContents("Kids", "Aladdin", "1992-11-25"))
+                    movieItemsContents.add(MovieItemsContents("Kids", "Bambi", "1942-08-21"))
+                }
+            }
+        }
     }
+
+    fun readFileAsLinesUsingUseLines(fileName: String): List<String>
+            = File(fileName).useLines { it.toList() }
 
     val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             result: ActivityResult ->
         if (result.resultCode == Activity.RESULT_OK) {
-//                val intent = result.data
+            // val intent = result.data
             // Handle the Intent
             //do stuff here
         }
@@ -174,5 +214,16 @@ class MainActivityContents : AppCompatActivity() {
 
         adapter = MovieItemsContentsAdapter(this, movieItemsContentsUpdated)
         movieItemsContentsListView.setAdapter(adapter)
+
+        val filename = "MainActivityContents"
+
+        File(getFilesDir().getAbsolutePath(), filename).printWriter().use { out ->
+            movieItemsContents.add(MovieItemsContents(movieItemSelected, currentMovieItem.title, currentMovieItem.release_date))
+            movieItemsContents.forEach {
+                out.println("${it.movieItem}")
+                out.println("${it.name}")
+                out.println("${it.year}")
+            }
+        }
     }
 }
