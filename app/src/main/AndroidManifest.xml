@@ -28,6 +28,9 @@
             android:name=".MainActivityContents">
         </activity>
         <activity
+            android:name=".MainActivityNewSearch">
+        </activity>
+        <activity
             android:name=".MainActivitySearchResults">
         </activity>
         <uses-library

@@ -1,34 +1,22 @@
 package com.example.top5_movies
 
+import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.os.Parcelable
 import android.util.DisplayMetrics
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
 import android.widget.AdapterView
 import android.widget.Button
 import android.widget.ListView
 import android.widget.RelativeLayout
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.top5_movies.databinding.NewSearchInputBinding
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import org.apache.http.HttpHeaders
-import org.apache.http.ParseException
-import org.apache.http.client.HttpClient
-import org.apache.http.client.methods.HttpGet
-import org.apache.http.impl.client.DefaultHttpClient
-import org.apache.http.util.EntityUtils
-import org.json.JSONException
-import org.json.JSONObject
-import java.io.IOException
 
 class MainActivityContents : AppCompatActivity() {
     lateinit var background: RelativeLayout
@@ -56,6 +44,8 @@ class MainActivityContents : AppCompatActivity() {
     lateinit var buttonSearch: Button
 
     private lateinit var bindingNewSearchInputBinding: NewSearchInputBinding
+
+    lateinit var movieItemSelected: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -142,7 +132,7 @@ class MainActivityContents : AppCompatActivity() {
         buttonSearch.background = gdButtonSearch
         background.addView(buttonSearch)
 
-        val movieItemSelected = intent.getStringExtra("currentMovieItem.name").toString()
+        movieItemSelected = intent.getStringExtra("currentMovieItem.name").toString()
         movieItemsContentsUpdated = movieItemsContents.filter({it.movieItem == movieItemSelected}).toMutableList()
         adapter = MovieItemsContentsAdapter(this, movieItemsContentsUpdated)
         movieItemsContentsListView.setAdapter(adapter)
@@ -157,79 +147,34 @@ class MainActivityContents : AppCompatActivity() {
         movieItemsContents.add(MovieItemsContents("Kids", "Bambi", "1942-08-21"))
     }
 
-    fun onClickButtonSearch() {
+    val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            result: ActivityResult ->
+        if (result.resultCode == Activity.RESULT_OK) {
+//                val intent = result.data
+            // Handle the Intent
+            //do stuff here
+        }
+    }
 
+    fun onClickButtonSearch() {
         Log.d("*5*", "onClickButtonSearch")
 
-        bindingNewSearchInputBinding = NewSearchInputBinding.inflate(LayoutInflater.from(this))
-        val view = bindingNewSearchInputBinding.root
-        setContentView(view)
+        val intent = Intent(this, MainActivityNewSearch::class.java)
+        startForResult.launch(intent)
+    }
 
-        bindingNewSearchInputBinding.buttonSearch.setOnClickListener {
-            if (bindingNewSearchInputBinding.label.text.toString().length > 0) {
-//                movieItems.add(MovieItems(bindingNewStringInputBinding.label.text.toString()))
-//                setContentView(R.layout.activity_main)
-//                adapter.notifyDataSetChanged()
-//                setContentView(background)
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if(resultCode != Activity.RESULT_OK) return
+        var currentMovieItems = data!!.getParcelableArrayListExtra<MovieItemsSearchResults>("MovieItemsSearchResults")
 
-                //searchResults
+        var currentMovieItem = currentMovieItems!!.last()
+//        currentMovieItem as MovieItemsSearchResults
 
-                runBlocking {
-                    GlobalScope.launch {
-                        try {
-                            val encodedURL = java.net.URLEncoder.encode(bindingNewSearchInputBinding.label.text.toString(), "utf-8")
-                            val url = "https://api.themoviedb.org/3/search/movie?query=" + encodedURL
+        movieItemsContentsUpdated.add(MovieItemsContents(movieItemSelected, currentMovieItem.title, currentMovieItem.release_date))
 
-                            val httppost: HttpGet = HttpGet(url)
-                            httppost.setHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                            httppost.setHeader("Authorization", getString(R.string.TMDB_Authorization))
-                            val httpclient: HttpClient = DefaultHttpClient()
-                            val response = httpclient.execute(httppost)
-                            val status = response.statusLine.statusCode
-                            if (status == 200) {
-                                val entity = response.entity
-                                val data = EntityUtils.toString(entity)
-                                val jsono = JSONObject(data)
-                                val jarray = jsono.getJSONArray("results")
-                                for (i in 0 until jarray.length()) {
-                                    val objectInJSON = jarray.getJSONObject(i)
-                                    val backdrop_path = objectInJSON.getString("backdrop_path")
-                                    val title = objectInJSON.getString("title")
-                                    val release_date = objectInJSON.getString("release_date")
-                                    searchResults.add(MovieItemsSearchResults(title, release_date, backdrop_path))
-                                }
-                            }
-                        } catch (e: JSONException) {
-                            Log.e("Error :", e.message!!)
-                        } catch (e: ParseException) {
-                            Log.e("Error :", e.message!!)
-                        } catch (e: IOException) {
-                            Log.e("Error :", e.message!!)
-                        } catch (e: Exception) {
-                            Log.e("Error :", e.message!!)
-                        }
-
-                        Log.d("*5*", "searchResults: " + searchResults)
-                    }
-                }
-
-                if (searchResults.count() > 0) {
-                    runOnUiThread {
-//                        val extra = Bundle()
-//                        extra.putSerializable("searchResults", searchResults as java.util.ArrayList<out Parcelable>)
-
-                        val intent = Intent(this, MainActivitySearchResults::class.java)
-                        intent.putParcelableArrayListExtra("searchResults", searchResults as java.util.ArrayList<out Parcelable>)
-//                        intent.putExtra("extra", extra);
-                        startActivity(intent)
-                    }
-                }
-            }
-        }
-
-        bindingNewSearchInputBinding.buttonCancel.setOnClickListener{
-            setContentView(R.layout.activity_movielist_contents)
-            setContentView(background)
-        }
+        adapter = MovieItemsContentsAdapter(this, movieItemsContentsUpdated)
+        movieItemsContentsListView.setAdapter(adapter)
+        adapter.notifyDataSetChanged()
     }
 }
