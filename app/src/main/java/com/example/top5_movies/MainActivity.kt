@@ -1,5 +1,6 @@
 package com.example.top5_movies
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
@@ -16,6 +17,7 @@ import android.widget.RelativeLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.top5_movies.databinding.NewStringInputBinding
+import java.io.File
 
 
 class MainActivity : AppCompatActivity() {
@@ -98,8 +100,6 @@ class MainActivity : AppCompatActivity() {
             if (listTapOperation == ButtonOperation.OPEN) {
                 val currentMovieItem = parent.getItemAtPosition(position)
                 currentMovieItem as MovieItems
-                Log.d("*5*", "MainActivity currentMovieItem.name " + currentMovieItem.name)
-
                 val intent = Intent(this, MainActivityContents::class.java)
                 intent.putExtra("currentMovieItem.name", currentMovieItem.name)
                 startActivity(intent)
@@ -225,9 +225,49 @@ class MainActivity : AppCompatActivity() {
         background.addView(buttonDelete)
     }
     fun setupMovieItems() {
-        movieItems.add(MovieItems("Action"))
-        movieItems.add(MovieItems("Kids"))
+        val filename = "MainActivity"
+
+        val PREFS_NAME = "MyPrefsFile"
+
+        val settings = getSharedPreferences(PREFS_NAME, 0)
+
+        if (settings.getBoolean("MainActivity_first_time", true)) {
+            //the app is being launched for first time, do something
+            Log.d("Comments", "First time")
+
+            // Developer reset file during testing
+            applicationContext.openFileOutput(filename, Context.MODE_PRIVATE).use {
+                it.write("".toByteArray())
+            }
+
+            // record the fact that the app has been started at least once
+            settings.edit().putBoolean("MainActivity_first_time", false).commit()
+        }
+
+        var file = File(getFilesDir().getAbsolutePath(), filename)
+        if (file != null) {
+
+            var testArray = readFileAsLinesUsingUseLines(file.absolutePath)
+            // 1 item lines per movieItems
+            if (testArray.count() > 0) {
+                var i = 0
+                while (i < testArray.count()) {
+                    movieItems.add(MovieItems(testArray.get(i)))
+                    i++
+                }
+            }
+            else {
+                // Dummy data for when app first used
+                if (movieItems.count() == 0) {
+                    movieItems.add(MovieItems("Action"))
+                    movieItems.add(MovieItems("Kids"))
+                }
+            }
+        }
     }
+
+    fun readFileAsLinesUsingUseLines(fileName: String): List<String>
+            = File(fileName).useLines { it.toList() }
 
     fun onClickButtonCreate() {
 
@@ -243,6 +283,14 @@ class MainActivity : AppCompatActivity() {
                 setContentView(R.layout.activity_main)
                 adapter.notifyDataSetChanged()
                 setContentView(background)
+
+                val filename = "MainActivity"
+
+                File(getFilesDir().getAbsolutePath(), filename).printWriter().use { out ->
+                    movieItems.forEach {
+                        out.println(it.name)
+                    }
+                }
             }
         }
 

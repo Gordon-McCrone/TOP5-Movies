@@ -146,9 +146,23 @@ class MainActivityContents : AppCompatActivity() {
         val filename = "MainActivityContents"
 
         // Developer reset file during testing
-//        applicationContext.openFileOutput(filename, Context.MODE_PRIVATE).use {
-//            it.write("".toByteArray())
-//        }
+
+        val PREFS_NAME = "MyPrefsFile"
+
+        val settings = getSharedPreferences(PREFS_NAME, 0)
+
+        if (settings.getBoolean("MainActivityContents_first_time", true)) {
+            //the app is being launched for first time, do something
+            Log.d("Comments", "First time")
+
+            // Developer reset file during testing
+            applicationContext.openFileOutput(filename, Context.MODE_PRIVATE).use {
+                it.write("".toByteArray())
+            }
+
+            // record the fact that the app has been started at least once
+            settings.edit().putBoolean("MainActivityContents_first_time", false).commit()
+        }
 
         var file = File(getFilesDir().getAbsolutePath(), filename)
         if (file != null) {
